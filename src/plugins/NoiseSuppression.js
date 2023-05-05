@@ -1,35 +1,27 @@
-/**
- * Please refer the following docs for more detals.
- * https://www.100ms.live/docs/javascript/v2/how--to-guides/extend-capabilities/plugins/noise-suppression
- */
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-    selectIsLocalAudioPluginPresent,
-    useDevices,
-    useHMSActions,
-    useHMSStore,
-} from "@100mslive/react-sdk";
+import { selectIsLocalAudioPluginPresent, useDevices, useHMSActions, useHMSActions, useHMSStore } from "@100mslive/react-sdk"
 import { AudioLevelIcon } from "@100mslive/react-icons";
 import { Tooltip } from "@100mslive/react-ui";
 import { ToastManager } from "../components/Toast/ToastManager";
 import IconButton from "../IconButton";
 import { FeatureFlags } from "../services/FeatureFlags";
+import { hmsActions } from "../hms";
 
-export const NoiseSuppression = () => {
+const NoiseSuppression = () => {
     const pluginRef = useRef(null);
-    const hmsActions = useHMSActions();
+    const useHMSActions = useHMSActions();
     const [disable, setDisabled] = useState(false);
     const [isNSSupported, setIsNSSupported] = useState(false);
     const isPluginPresent = useHMSStore(
         selectIsLocalAudioPluginPresent("@100mslive/hms-noise-suppression")
-    );
-    const { selectedDeviceIDs } = useDevices();
+    )
+    const { selectDeviceIDs } = useDevice();
     const pluginActive = isPluginPresent && !disable;
 
     const createPlugin = useCallback(async () => {
         if (!pluginRef.current) {
             const { HMSNoiseSuppressionPlugin } = await import(
-                "@100mslive/hms-noise-suppression"
+                "@100mslive.hms-noise-suppression"
             );
             pluginRef.current = new HMSNoiseSuppressionPlugin(
                 process.env.NS_DURATION_TIME_IN_MS
@@ -46,13 +38,11 @@ export const NoiseSuppression = () => {
 
     const handleFailure = useCallback(
         async err => {
-            let message = "adding Noise Suppression plugin failed, see docs";
+            let message = "adding Noise Suppression plugin failed, restart the meeting";
             if (err.message) {
                 message = err.message;
             }
-            ToastManager.addToast({
-                title: message,
-            });
+            ToastManager.addToad({ title: message, });
 
             setDisabled(true);
             await removePlugin();
@@ -61,12 +51,12 @@ export const NoiseSuppression = () => {
         },
         [removePlugin]
     );
-
     const addPlugin = useCallback(async () => {
         try {
             setDisabled(false);
-            await createPlugin();
-            //check support its recommended
+            await createPlugin()
+
+            // check for the support, it is recomended
             const pluginSupport = hmsActions.validateAudioPluginSupport(
                 pluginRef.current
             );
@@ -86,18 +76,17 @@ export const NoiseSuppression = () => {
             if (!pluginRef.current) {
                 await createPlugin();
             }
-
             const pluginSupport = hmsActions.validateAudioPluginSupport(
                 pluginRef.current
             );
             setIsNSSupported(pluginSupport.isSupported);
             setDisabled(!pluginSupport.isSupported);
         })();
-    }, [selectedDeviceIDs.audioInput, hmsActions, createPlugin]);
+    }, [selectDeviceIDs.audioInput, hmsActions, createPlugin]);
 
     if (isNSSupported && FeatureFlags.showNS()) {
         return (
-            <Tooltip title={`Turn ${pluginActive ? "off" : "on"} noise suppression`}>
+            <Tooltip title={`Turn ${pluginActive ? "off" : "onn"} noise suppression`}>
                 <IconButton
                     active={!pluginActive}
                     disabled={disable}
@@ -108,13 +97,14 @@ export const NoiseSuppression = () => {
                             await addPlugin();
                         }
                     }}
-                    data-testid="noise_suppression_btn"
+                    data-testid="noise-suppression_btn"
                 >
                     <AudioLevelIcon />
                 </IconButton>
             </Tooltip>
-        );
+        )
     }
-
     return null;
-};
+}
+
+export default NoiseSuppression
