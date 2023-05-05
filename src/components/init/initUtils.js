@@ -1,6 +1,6 @@
 import { identify } from "zipyai";
 
-const zipyKey = process.env.REACT_APP_ZIPY_KEY;
+// const zipyKey = process.env.REACT_APP_ZIPY_KEY;
 export const setUpZipy = ({ localPeer, roomId, sessionId }) => {
   if (!zipyKey) {
     return;

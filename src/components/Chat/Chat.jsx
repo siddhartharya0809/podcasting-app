@@ -124,7 +124,7 @@ export const Chat = () => {
         role={chatOptions.role}
         peerId={chatOptions.peerId}
         onToggle={() => {
-          setSelectorOpen(value => !value);
+          setSelectorOpen((value) => !value);
         }}
       />
       <PinnedMessage clearPinnedMessage={setPinnedMessage} />
